@@ -23,7 +23,7 @@ console.log(data);
     var y = d3.scaleLinear().range([inner_height, 0]);
 
     x.domain(d3.extent(data, function(d) { return d.date; }));
-    y.domain([0, d3.max(data, function(d) { return d.close; })]);
+    y.domain([d3.min(data, d => d.close), d3.max(data, d => d.close )]);
 
     // define the line
     var valueline = d3.line()
