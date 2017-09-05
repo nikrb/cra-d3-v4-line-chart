@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import * as d3 from 'd3';
+import Line from './Line';
 import XYAxis from './XYAxis';
 
 export default class LineChart extends React.Component {
@@ -16,32 +17,39 @@ export default class LineChart extends React.Component {
     const inner_height = height - margin.top - margin.bottom;
     const transform = `translate( ${margin.left}, ${margin.top})`;
     // parse the date / time
-    var parseTime = d3.timeParse("%Y-%m-%d");
-    const data = this.props.data.map( (d) => {
-      return { date: parseTime( d.date), close: +d.close};
+    const parseTime = d3.timeParse("%Y-%m-%d");
+    const data = this.props.data.map( (line) => {
+      return line.map( (l) => {
+        return { date: parseTime( l.date), close: +l.close};
+      });
     });
-console.log(data);
     // set the ranges
-    var x = d3.scaleTime().range([0, inner_width]);
-    var y = d3.scaleLinear().range([inner_height, 0]);
+    const xScale = d3.scaleTime().range([0, inner_width]);
+    const yScale = d3.scaleLinear().range([inner_height, 0]);
+    const cScale = d3.scaleOrdinal(d3.schemeCategory20);
 
-    x.domain(d3.extent(data, function(d) { return d.date; }));
-    y.domain([d3.min(data, d => d.close), d3.max(data, d => d.close )]);
+    // flatten the array of lines to find boundary values
+    const fd = data.concatAll();
+    xScale.domain(d3.extent(fd, function(d) { return d.date; }));
+    yScale.domain([d3.min(fd, d => d.close), d3.max(fd, d => d.close )]);
 
-    // define the line
-    var valueline = d3.line()
-        .x(function(d) { return x(d.date); })
-        .y(function(d) { return y(d.close); });
-    const dots = data.map( (d,i) => {
-      return <circle key={i} cx={x(d.date)} cy={y(d.close)} r="5" fill="red" />;
+    const lines = data.map( (line,i) => {
+        return <Line key={i} data={line} xScale={xScale} yScale={yScale}
+          fill="transparent" stroke={cScale( i)}/>;
+    });
+    const dots = data.map( (line,i) => {
+      return line.map( (l,j) => {
+        return <circle key={i*100+j} cx={xScale(l.date)} cy={yScale(l.close)}
+          r="3" fill={cScale(i)} />;
+      });
     });
     return (
       <svg width={width} height={height}>
         <g transform={transform} >
-          <path d={valueline(data)} fill="transparent" stroke="black"/>
+          {lines}
           {dots}
         </g>
-        <XYAxis scales={{xScale:x,yScale:y}} margins={margin} height={height} width={width} />
+        <XYAxis scales={{xScale,yScale}} margins={margin} height={height} width={width} />
       </svg>
     );
   };
