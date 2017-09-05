@@ -5,7 +5,10 @@ import XYAxis from './XYAxis';
 
 export default class LineChart extends React.Component {
   static propTypes = {
-    data: PropTypes.array
+    width: PropTypes.number.isRequired,
+    height: PropTypes.number.isRequired,
+    margin: PropTypes.object.isRequired,
+    data: PropTypes.array.isRequired
   };
   render = () => {
     const {width,height,margin} = this.props;
