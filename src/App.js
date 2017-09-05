@@ -15,7 +15,8 @@ class App extends Component {
     ];
     return (
       <div className="App">
-        <LineChart margin={margin} data={data} />
+        <LineChart margin={margin}
+          data={data} width={600} height={400} />
       </div>
     );
   }
